@@ -23,7 +23,8 @@ env:
   CONFIG_FILE: mt3600be.config
   DIY_P1_SH: diy-part1.sh
   DIY_P2_SH: diy-part2.sh
-  UPLOAD_BIN_DIR: true
+  UPLOAD_BIN_DIR: false
+  UPLOAD_IPK: true
   UPLOAD_FIRMWARE: false
   UPLOAD_RELEASE: true
   TZ: Asia/Shanghai
@@ -154,9 +155,18 @@ jobs:
         name: OpenWrt_bin${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
         path: openwrt/bin
 
+    - name: Upload IPK packages
+      uses: actions/upload-artifact@v4
+      if: steps.compile.outputs.status == 'success' && env.UPLOAD_IPK == 'true'
+      with:
+        name: OpenWrt_ipk${{ env.DEVICE_NAME }}${{ env.FILE_DATE }}
+        path: |
+          openwrt/bin/packages/**/*.ipk
+          openwrt/bin/targets/**/*.ipk
+
     - name: Organize files
       id: organize
-      if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
+      if: (env.UPLOAD_FIRMWARE == 'true' || env.UPLOAD_RELEASE == 'true') && !cancelled()
       run: |
         cd openwrt/bin/targets/*/*
         rm -rf packages
