@@ -96,6 +96,18 @@ jobs:
         sudo timedatectl set-timezone "$TZ"
         sudo chown $USER:$GROUPS $GITHUB_WORKSPACE
 
+    - name: Check host compiler
+      run: |
+        echo "===== clang++ ====="
+        command -v clang++ || true
+        clang++ --version || true
+        echo "===== gcc ====="
+        command -v gcc || true
+        gcc --version || true
+        echo "===== g++ ====="
+        command -v g++ || true
+        g++ --version || true
+
     - name: Clone source code
       working-directory: ./
       run: |
