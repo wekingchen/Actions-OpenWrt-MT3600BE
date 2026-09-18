@@ -12,8 +12,9 @@
 
 
 # 修复 helloworld/dev 新版 GN 在 Ubuntu 22.04 的 host 编译兼容问题
-# GN Linux 默认使用 clang++；当前 runner 的 clang + libstdc++ 12 会在 std::ranges 处失败。
-# 仅让 GN 自身改用 gcc/g++，不全局修改 OpenWrt 的 CC/CXX，避免影响其他包和目标工具链。
+# GN Linux 默认使用 clang++；Ubuntu 22.04 runner 的 clang 14 会在新版 GN 的 std::ranges 处失败。
+# runner 默认 g++ 是 11.4，也不足以稳定编译当前要求 C++23 的 GN。
+# 仅让 GN 自身改用 gcc-12/g++-12，不全局修改 OpenWrt 的 CC/CXX，避免影响其他包和目标工具链。
 GN_MAKEFILE="feeds/helloworld/gn/Makefile"
 if [ -f "$GN_MAKEFILE" ]; then
     python3 - "$GN_MAKEFILE" <<'PY_GN'
@@ -26,18 +27,18 @@ text = path.read_text()
 
 # 给 Host/Configure 中调用 build/gen.py 的命令局部注入 GCC 工具链。
 # 用正则而不是写死整段 Makefile，降低 helloworld 轻微改版导致补丁失效的概率。
-pattern = r'^(\s*)(?!CC=gcc CXX=g\+\+ AR=ar )(\$\(PYTHON\)[^\n]*build/gen\.py[^\n]*)$'
-replacement = r'\1CC=gcc CXX=g++ AR=ar \2'
+pattern = r'^(\s*)(?:CC=[^ ]+\s+CXX=[^ ]+\s+AR=[^ ]+\s+)?(\$\(PYTHON\)[^\n]*build/gen\.py[^\n]*)$'
+replacement = r'\1CC=gcc-12 CXX=g++-12 AR=ar \2' 
 new_text, count = re.subn(pattern, replacement, text, count=1, flags=re.MULTILINE)
 
 if count == 0:
-    if 'CC=gcc CXX=g++ AR=ar' in text and 'build/gen.py' in text:
-        print('GN Makefile already patched, skip.')
+    if 'CC=gcc-12 CXX=g++-12 AR=ar' in text and 'build/gen.py' in text:
+        print('GN Makefile already patched for gcc-12/g++-12, skip.')
         raise SystemExit(0)
     raise SystemExit('ERROR: 未找到 GN Host/Configure 中的 build/gen.py 调用，请检查 feeds/helloworld/gn/Makefile')
 
 path.write_text(new_text)
-print('Patched GN Host/Configure to use gcc/g++.')
+print('Patched GN Host/Configure to use gcc-12/g++-12.')
 PY_GN
 
     echo "===== GN Host/Configure after patch ====="
