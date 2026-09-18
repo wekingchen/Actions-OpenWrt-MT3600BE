@@ -152,12 +152,6 @@ jobs:
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
 
-    - name: Prebuild GN host tool
-      run: |
-        cd openwrt
-        echo "Prebuilding helloworld/gn with the selected host compiler..."
-        make package/feeds/helloworld/gn/host/compile -j1 V=s
-
     - name: Compile the firmware
       id: compile
       run: |
