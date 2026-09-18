@@ -91,29 +91,10 @@ jobs:
         sudo docker image prune --all --force
         sudo -E apt-get -qq update
         sudo -E apt-get -qq install $(curl -fsSL raw.githubusercontent.com/wekingchen/my-file/master/depends-ubuntuLTS)
-        sudo -E apt-get -qq install gcc-12 g++-12
         sudo -E apt-get -qq autoremove --purge
         sudo -E apt-get -qq clean
         sudo timedatectl set-timezone "$TZ"
         sudo chown $USER:$GROUPS $GITHUB_WORKSPACE
-
-    - name: Check host compiler
-      run: |
-        echo "===== clang++ ====="
-        command -v clang++ || true
-        clang++ --version || true
-        echo "===== gcc ====="
-        command -v gcc || true
-        gcc --version || true
-        echo "===== g++ ====="
-        command -v g++ || true
-        g++ --version || true
-        echo "===== gcc-12 ====="
-        command -v gcc-12 || true
-        gcc-12 --version || true
-        echo "===== g++-12 ====="
-        command -v g++-12 || true
-        g++-12 --version || true
 
     - name: Clone source code
       working-directory: ./
